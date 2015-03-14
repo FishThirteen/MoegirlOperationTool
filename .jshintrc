@@ -1,0 +1,11 @@
+{
+    "common1": true,
+    "common2": true,
+    "repoSpecific1": true,
+    "repoSpecific2": true,
+    "globals": {
+        "repoGlobal1": true,
+        "repoGlobal2": false
+    }
+}
+
