@@ -74,7 +74,7 @@ function test12() {
 
 	/* InfoPage class
 	*************************************************************/
-	function InfoPage( ) {
+	function InfoPage() {
 		this.api = new mw.Api();
 		this.isInit = false;
 		this.window;
@@ -141,6 +141,20 @@ function test12() {
 			.addClass( 'first' );
 
 		var subPageLinkUnit = this.createSubPageLinksUnit().appendTo( unitLine );
+
+		var logUnit = this.createLogUnit().appendTo( unitLine );
+	}
+
+	InfoPage.prototype.createLogUnit = function() {
+		var control = $( this.unitTemplate.format( textResources.subPagesUnit_Title, 'http://www.baidu.com' ));
+		var controlBody = $( '.unit_body', control );
+
+		for ( var i = 0; i < 10; i++ ) {
+			var line = $( '<div class="body_line" style="font-size: 12px;">(03/04 05:06) - 移动 - Afa大番茄家的二儿子的三孙子的爸爸</div>' );
+			line.appendTo( controlBody );
+		}
+
+		return control;
 	}
 
 
@@ -195,4 +209,30 @@ function test12() {
 
 		return control;
 	}
+
+	InfoPage.prototype.getOperationString = function( operationType ) {
+		switch( operationType )  {
+			case 'patrol':
+				return '标记';
+			case 'move':
+				return '移动';
+			case 'block':
+				return '阻挡';
+			case 'protect':
+				return '保护';
+			case 'delete':
+				return '删除';
+			case 'upload':
+				return '上传';
+			case 'import':
+				return '导入';
+			case 'merge':
+				return '合并';
+			case 'review':
+				return '检查';
+			default:
+				return '操作';
+		}
+	}
+	
 })( window, document, jQuery );
