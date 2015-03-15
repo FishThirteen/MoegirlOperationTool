@@ -1,8 +1,10 @@
 function test12() {
 	var api = new mw.Api();
+	var pageTitle = mw.config.get( 'wgPageName' );
 	api.get({
 		action: 'query',
-		list: 'allpages'
+		list: 'allpages',
+		titles: 'User:Admin'
 	}).done( function( data )  {
 		console.log( data );
 	});
@@ -13,21 +15,40 @@ function test12() {
 
 	// simple string.format
 	if (!String.prototype.format) {
-	  String.prototype.format = function() {
-	    var args = arguments;
-	    return this.replace(/{(\d+)}/g, function(match, number) { 
-	      return typeof args[number] != 'undefined'
-	        ? args[number]
-	        : match
-	      ;
-	    });
-	  };
+		String.prototype.format = function() {
+		var args = arguments;
+		return this.replace(/{(\d+)}/g, function(match, number) { 
+			return typeof args[number] != 'undefined'
+				? args[number] : match ;
+			});
+		};
 	}
 
-	var resText = {
+	$( 'body' ).css( { positon: 'relative' } );
+
+	var textResources = {
 		operationTool_MainTitle: "AnnA's 管理工具",
-		linkPagesUnit_Title: '链入页面'
+		linkPagesUnit_Title: '链入页面',
+		subPagesUnit_Title: '子页面',
+		mwConfig_ArticlePath: 'wgArticlePath'
 	}
+	
+	var uiTemplates = {
+		shadowTemplate : '<div id="mot_shade" ></div>',
+		windowTemplate : ''
+			+ '<div id="mot_main">'
+				+ '<div id="mot_main_panel" class="{0}" >'
+					+ '<a href="javascript:void(0);" class="panel_close_button"></a>'
+					+ '<div class="main_panel_inner">'
+						+ '<div class="title_div" >'
+							+ '<h1>{1}</h1>'
+						+ '</div>'
+					+ '</div>'
+				+ '</div>'
+			+ '</div>'
+
+	}
+
 
 		
 	var moreButtonTemplate = '<div id="moegirl_more_button" role="navigation" class="vectorMenu" aria_labelledby="p_cactions_label">'
@@ -36,109 +57,13 @@ function test12() {
 	var moreButton = $( moreButtonTemplate );
 	var orignalMoreButtonId = '#p-cactions';
 
-	
 	replaceMoreButton();
-
-	moreButton.click( tooglePanel() );
-
-	function tooglePanel() {
-		var hasShow = false;
-		var isExpand = false;
-		var mainShade;
-		var mainPanel;
-
-		function initPanel() {
-			var shadeTemplate = '<div id="mot_shade" ></div>';
-			var mainPanelTemplate = ''
-				+ '<div id="mot_main">'
-					+ '<div id="mot_main_panel" >'
-						+ '<a href="javascript:void(0);" class="panel_close_button"></a>'
-						+ '<div class="main_panel_inner">'
-							+ '<div class="title_div" >'
-								+ '<h1>' + resText.operationTool_MainTitle  + '</h1>'
-							+ '</div>'
-							+ '<div class="page_infos">'
-								+ '<div class="page_info_line clearfix">'
-									+ '<div class="fl_l page_info_unit first">'
-										+ '<div class="clearfix unit_title">'
-											+ '<h2 class="fl_l">'+ resText.linkPageUnit_Title  +'</h2>'
-											+ '<a href="javascript:void(0);" class="more_link fl_r" >更多...</a>'
-										+ '</div>'
-										+ '<div class="clearfix unit_body">'
-											+ '<div class="body_line">'
-												+ '(<a href="javascript:void(0)" class="text_link" >链</a>) <a href="javascript:void(0)" class="text_link" >萌娘百科更新姬</a>'
-											+ '</div>'
-											+ '<div class="body_line">'
-												+ '(<a href="javascript:void(0)" class="text_link" >链</a>) <a href="javascript:void(0)" class="text_link" >格列夫游记</a>'
-											+ '</div>'
-											+ '<div class="body_line">'
-													+ '(<a href="javascript:void(0)" class="text_link" >链</a>) <a href="javascript:void(0)" class="text_link" >公会同盟副议长塞莉莲,如果再长一点点呢</a>'
-											+ '</div>'
-										+ '</div>'
-									+ '</div>'
-									+ '<div class="fl_l page_info_unit"></div>'
-									+ '<div class="fl_l page_info_unit"></div>'
-								+ '</div>'
-								+ '<div class="page_info_line clearfix">'
-									+ '<div class="fl_l page_info_unit first"></div>'
-									+ '<div class="fl_l page_info_unit"></div>'
-									+ '<div class="fl_l page_info_unit"></div>'
-								+ '</div>'
-							+ '</div>'
-						+ '</div>'
-					+ '</div>'
-				+ '</div>';
-
-
-			var $body = $( 'body' );
-			$body.css({ position: 'relative' });
-			mainShade = $( shadeTemplate ).appendTo( $body );
-			mainPanel = $( mainPanelTemplate ).appendTo( $body );
-
-			var closeButton = $( '.panel_close_button', mainPanel );
-			closeButton.click( function() {
-				hidePanel();
-			});
-			hasShow = true;
-		}
-
-		function showPanel() {
-			if ( !$.isEmptyObject( mainShade )) {
-				mainShade.show();
-			}
-
-			if ( !$.isEmptyObject( mainPanel )) {
-				mainPanel.show();
-			}	
-			
-			isExpand = true;
-		}
-
-		function hidePanel() {
-			if ( !$.isEmptyObject( mainShade )) {
-				mainShade.hide();
-			}
-
-			if ( !$.isEmptyObject( mainPanel )) {
-				mainPanel.hide();
-			}
-			isExpand = false;
-
-		}
-
-		return function() {
-			if ( !hasShow ) {
-				initPanel();
-			}
-
-			if ( isExpand ) {
-				hidePanel();		
-			} else {
-				showPanel();		
-			}
-		}
-	}
 	
+
+	var infoPage = new InfoPage();
+	moreButton.click( function() {
+		infoPage.show();
+	});
 
 	function replaceMoreButton() {
 		$( orignalMoreButtonId )
@@ -146,41 +71,128 @@ function test12() {
 			.remove();	
 	}
 
-	/* OperationToolService class
-	 *************************************************************/
-	function OperationToolService( mw, res, config ) {
-		this.mw = mw;
+
+	/* InfoPage class
+	*************************************************************/
+	function InfoPage( ) {
 		this.api = new mw.Api();
-		this.res= res;
-		this.config = config;
+		this.isInit = false;
+		this.window;
+		this.shadow;
+		this.closeButton;
+		this.unitTemplate = ''
+			+ '<div class="fl_l page_info_unit">'
+				+ '<div class="clearfix unit_title">'
+					+ '<h2 class="fl_l">{0}</h2>'
+					+ '<a href="{1}" target="_blank" class="more_link fl_r" >更多...</a>'
+				+ '</div>'
+				+ '<div class="clearfix unit_body">'
+				+ '</div>'
+			+ '</div>';
+
+		this.infoPageBodyTemplate = '<div class="page_infos"></div>';
+		this.pageInfoLineTemplate = '<div class="page_info_line clearfix"></div>';
+		this.pageLinkLineContentTemplate = '<div class="body_line">(<a target="_blank" href="{0}" class="text_link" >链</a>) <a target="_blank" href="{1}" class="text_link" >{2}</a></div>';
+		this.unitLineCount = 10;
+		this.normalLinkLineTemplate = '<div class="body_line"><a target="_blank" href="{0}" class="text_link" >{1}</a></div>';
+		this.pageName = mw.config.get( 'wgPageName' );
 	}
 
-	OperationToolService.prototype.unitTemplate = ''
-		+ '<div class="clearfix unit_title">'
-			+ '<h2 class="fl_l">{0}</h2>'
-			+ '<a href="{1}" class="more_link fl_r" >更多...</a>'
-		+ '</div>'
-		+ '<div class="clearfix unit_body">'
-		+ '</div>';
-	OperationToolService.prototype.unitLineTemplate= '<div class="body_line"></div>';
+	InfoPage.prototype.show = function() {
+		if ( !this.isInit ) {
+			this.createWindow( 'infopage_main', textResources.operationTool_MainTitle );
+		}
+		this.window.show();
+		this.shadow.show();
+	}
 
-	OperationToolService.prototype.pageLinkLineContentTemplate= '(<a href="{0}" class="text_link" >链</a>) <a href="{1}" class="text_link" >{2}</a>';
+	InfoPage.prototype.hide = function() {
+		this.shadow.hide();
+		this.window.hide();
+	}
+
+	InfoPage.prototype.close = function() {
+		this.shadow.remove();
+		this.window.remove();
+	}
+
+	InfoPage.prototype.createWindow = function( title, className ) {
+		this.shadow = $( uiTemplates.shadowTemplate ).appendTo( 'body' );
+		this.window = $( uiTemplates.windowTemplate.format( title, className ))
+			.appendTo( 'body' );
+
+		this.shadow.hide();
+		this.window.hide();
+
+		this.closeButton =  $( '.panel_close_button', this.window );
+
+		var self = this;
+		this.closeButton.click( function() {
+			self.close();
+		});
+
+		var unitBody = $( this.infoPageBodyTemplate )
+			.appendTo( $( '.main_panel_inner', this.window ) );
+
+		var unitLine = $( this.pageInfoLineTemplate ).appendTo( unitBody );
+
+		var pageLinkUnit = this.createPageLinksUnit()
+			.appendTo( unitLine )
+			.addClass( 'first' );
+
+		var subPageLinkUnit = this.createSubPageLinksUnit().appendTo( unitLine );
+	}
 
 
-	OperationToolService.prototype.createPageLinksUnit( container ) {
+	InfoPage.prototype.createPageLinksUnit = function() {
+		var pageLinkPath = mw.config.get( textResources.mwConfig_ArticlePath )
+			.replace( '$1', '特殊:链入页面/$1' );
+		var currentPageLinkUrl = pageLinkPath.replace( '$1', this.pageName );
+		var control = $( this.unitTemplate.format( textResources.linkPagesUnit_Title, currentPageLinkUrl ));
+		var controlBody = $( '.unit_body', control );
+
 		var self = this; 
-		var control = $( unitTemplate.format( this.res.linkPagesUnit_Title,  ))
 		this.api.get({
 			action: 'query',
-			list: 'allpages',
-			aplimit: 15
+			list: 'backlinks',
+			bltitle: this.pageName,
+			aplimit: this.unitLineCount
 		}).done(function( data ) {
-			
+			$.each( data.query.backlinks, function( i, v ) {
+				var pageTitle = v.title;
+				var pageLink = mw.config.get( textResources.mwConfig_ArticlePath ).replace( '$1', pageTitle );
+				var pagePageLink = pageLinkPath.replace( '$1', pageTitle );
+
+				var line = $( self.pageLinkLineContentTemplate.format( pagePageLink, pageLink, pageTitle)).appendTo( controlBody );
+			});
 		});
-		
+
+		return control;
 	}
-	
-	// OperationToolService class
 
+	InfoPage.prototype.createSubPageLinksUnit = function() {
+		var moreLink = mw.config.get( textResources.mwConfig_ArticlePath )
+			.replace( '$1', 'Special:PrefixIndex' ) + '&prefix=' + this.pageName;
+		var control = $( this.unitTemplate.format( textResources.subPagesUnit_Title, moreLink ));
+		var controlBody = $( '.unit_body', control );
 
+		var self = this;	
+		this.api.get({
+			action: 'query',
+			list: 'prefixsearch',
+			pssearch: this.pageName,
+			aplimit: this.unitLineCount
+		}).done( function( data ) {
+			$.each( data.query.prefixsearch, function( i, v ) {
+				var pageTitle = v.title;
+				if ( pageTitle == self.pageName ) {
+					return;
+				}
+				var pageLink = mw.config.get( textResources.mwConfig_ArticlePath ).replace( '$1', pageTitle );
+				var line = $( self.normalLinkLineTemplate.format( pageLink, pageTitle)).appendTo( controlBody );
+			} );
+		});
+
+		return control;
+	}
 })( window, document, jQuery );
