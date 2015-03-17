@@ -40,30 +40,37 @@ function test12() {
 		}
 	}
 
+	
+	function mwUtility() {
+	}
+
+	mwUtility.prototype.isUserPage = function( ) {
+		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 2;
+	}
+
+	mwUtility.prototype.isTemplatePage = function( data ) {
+		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 10;
+	}
+
+	if ( !window.motMWUtility ) {
+		var utility = new mwUtility();
+		window.motMWUtility = utility;
+	}
 		
 
 	$( 'body' ).css( { positon: 'relative' } );
 
-	var textResources = {
-		operationTool_MainTitle: "AnnA's 管理工具",
-		linkPagesUnit_Title: '链入页面',
-		subPagesUnit_Title: '子页面',
-		pageLogUnit_Title: '页面日志',
-		templateLinksUnit_Title: '未使用此模板的链接',
-		userLogUnit_Title: '用户日志',
-		userContributionUnit_Title: '用户贡献',
-		mwConfig_ArticlePath: 'wgArticlePath'
-	}
-	
 	var uiTemplates = {
-		shadowTemplate : '<div id="mot_shade" ></div>',
+		shadowTemplate : '<div class="mot_shade" ></div>',
 		windowTemplate : ''
-			+ '<div id="mot_main">'
-				+ '<div id="mot_main_panel" class="{0}" >'
+			+ '<div class="mot_main">'
+				+ '<div class="mot_main_panel" class="{0}" >'
 					+ '<a href="javascript:void(0);" class="panel_close_button"></a>'
-					+ '<div class="main_panel_inner">'
-						+ '<div class="title_div" >'
-							+ '<h1>{1}</h1>'
+					+ '<div class=main_panel_div>'
+						+ '<div class="main_panel_inner">'
+							+ '<div class="title_div" >'
+								+ '<h1>{1}</h1>'
+							+ '</div>'
 						+ '</div>'
 					+ '</div>'
 				+ '</div>'
@@ -100,16 +107,14 @@ function test12() {
 			});
 	}
 		
-	var moreButton = new MoreButton();
-	moreButton.replaceOrignal();
+	var opMoreButton = new MoreButton();
+	//opMoreButton.replaceOrignal();
 
-	moreButton.addMenuItem( 'test1_menu', '测试按钮', function( event ) {
-		console.log( event.target );
-		
-	} );
+	window.opMoreButton = opMoreButton;
 
+	
 	var infoPage = new InfoPage();
-	moreButton.addMenuItem( 'mlot_view_page_info_menu', '查看页面信息', function( event ) {
+	opMoreButton.addMenuItem( 'mlot_view_page_info_menu', '查看页面信息', function( event ) {
 		infoPage.show();
 	} );
 
@@ -123,6 +128,16 @@ function test12() {
 		this.window;
 		this.shadow;
 		this.closeButton;
+		this.textResources = {
+			operationTool_MainTitle: "AnnA's 管理工具",
+			linkPagesUnit_Title: '链入页面',
+			subPagesUnit_Title: '子页面',
+			pageLogUnit_Title: '页面日志',
+			templateLinksUnit_Title: '未使用此模板的链接',
+			userLogUnit_Title: '用户日志',
+			userContributionUnit_Title: '用户贡献',
+			mwConfig_ArticlePath: 'wgArticlePath'
+		};
 		this.unitTemplate = ''
 			+ '<div class="fl_l page_info_unit">'
 				+ '<div class="clearfix unit_title">'
@@ -148,13 +163,13 @@ function test12() {
 		this.doubleLineCount = 7;
 		this.normalLinkLineTemplate = '<div class="body_line"><a target="_blank" href="{0}" class="text_link" >{1}</a></div>';
 		this.pageName = mw.config.get( 'wgPageName' );
-		this.pathPrefix = mw.config.get( textResources.mwConfig_ArticlePath );
+		this.pathPrefix = mw.config.get( this.textResources.mwConfig_ArticlePath );
 		
 	}
 
 	InfoPage.prototype.show = function() {
 		if ( !this.isInit ) {
-			this.createWindow( 'infopage_main', textResources.operationTool_MainTitle );
+			this.createWindow( 'infopage_main', this.textResources.operationTool_MainTitle );
 			this.isInit = true;
 		}
 		this.window.show();
@@ -173,9 +188,9 @@ function test12() {
 	}
 
 	InfoPage.prototype.createWindow = function( title, className ) {
-		this.shadow = $( uiTemplates.shadowTemplate ).appendTo( 'body' );
+		this.shadow = $( uiTemplates.shadowTemplate ).appendTo( 'body' ).addClass( 'page_info' );
 		this.window = $( uiTemplates.windowTemplate.format( title, className ))
-			.appendTo( 'body' );
+			.appendTo( 'body' ).addClass( 'page_info' );
 
 		this.shadow.hide();
 		this.window.hide();
@@ -195,22 +210,25 @@ function test12() {
 		var pageLinkUnit = this.createPageLinksUnit()
 			.appendTo( unitLine )
 			.addClass( 'first' );
-
 		var subPageLinkUnit = this.createSubPageLinksUnit().appendTo( unitLine );
-
 		var logUnit = this.createLogUnit().appendTo( unitLine );
-
-		var unitLine2 = $( this.pageInfoLineTemplate ).appendTo( unitBody );
-		this.createTemplateLinksUnit().appendTo( unitLine2 ).addClass( 'first' );
-		this.createUserLogUnit().appendTo( unitLine2 );
-		this.createUserContributionUnit().appendTo( unitLine2 );
+		
+		if ( motMWUtility.isTemplatePage() ) {
+			var unitLine2 = $( this.pageInfoLineTemplate ).appendTo( unitBody );
+			this.createTemplateLinksUnit().appendTo( unitLine2 ).addClass( 'first' );
+		} else if ( motMWUtility.isUserPage() ) {
+			var unitLine2 = $( this.pageInfoLineTemplate ).appendTo( unitBody );
+			this.createUserLogUnit().appendTo( unitLine2 ).addClass( 'first' );
+			this.createUserContributionUnit().appendTo( unitLine2 );
+		} else {
+		}
 	}
 
 	InfoPage.prototype.createUserContributionUnit = function() {
 		var pageUserName = mw.config.get( 'wgTitle' );
 		var moreLink = this.pathPrefix.replace( '$1', 'Special:Contributions/' + pageUserName );
 
-		var control = $( this.unitTemplate.format( textResources.userContributionUnit_Title, moreLink ));
+		var control = $( this.unitTemplate.format( this.textResources.userContributionUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
 		var lineTemplate =''
@@ -241,7 +259,7 @@ function test12() {
 	InfoPage.prototype.createUserLogUnit = function() {
 		var pageUserName = mw.config.get( 'wgTitle' );
 		var moreLink = this.pathPrefix.replace( '$1', 'Special:Log&user=' + pageUserName );
-		var control = $( this.unitTemplate.format( textResources.userLogUnit_Title, moreLink ));
+		var control = $( this.unitTemplate.format( this.textResources.userLogUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
 		var lineTemplate =''
@@ -280,7 +298,7 @@ function test12() {
 
 
 	InfoPage.prototype.createTemplateLinksUnit = function() {
-		var control = $( this.vscrollUnitTemplate.format( textResources.templateLinksUnit_Title ));
+		var control = $( this.vscrollUnitTemplate.format( this.textResources.templateLinksUnit_Title ));
 		var controlBody = $( '.unit_body', control );
 
 		var self = this;
@@ -333,7 +351,7 @@ function test12() {
 		var logPagePath = this.pathPrefix.replace( '$1', 'Special:Log&page=$1' );
 		var moreLink = logPagePath.replace( '$1', this.pageName + '&hide_patrol_log=0' );
 		
-		var control = $( this.unitTemplate.format( textResources.pageLogUnit_Title, moreLink ));
+		var control = $( this.unitTemplate.format( this.textResources.pageLogUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
 		var self = this;
@@ -380,7 +398,7 @@ function test12() {
 	InfoPage.prototype.createPageLinksUnit = function() {
 		var pageLinkPath = this.pathPrefix.replace( '$1', '特殊:链入页面/$1' );
 		var currentPageLinkUrl = pageLinkPath.replace( '$1', this.pageName );
-		var control = $( this.unitTemplate.format( textResources.linkPagesUnit_Title, currentPageLinkUrl ));
+		var control = $( this.unitTemplate.format( this.textResources.linkPagesUnit_Title, currentPageLinkUrl ));
 		var controlBody = $( '.unit_body', control );
 
 		var self = this; 
@@ -405,7 +423,7 @@ function test12() {
 	InfoPage.prototype.createSubPageLinksUnit = function() {
 		var moreLink = this.pathPrefix.replace( '$1', 'Special:PrefixIndex' ) 
 			+ '&prefix=' + this.pageName;
-		var control = $( this.unitTemplate.format( textResources.subPagesUnit_Title, moreLink ));
+		var control = $( this.unitTemplate.format( this.textResources.subPagesUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
 		var self = this;	
@@ -429,12 +447,12 @@ function test12() {
 	}
 
 	InfoPage.prototype.getUserPageLink = function( userName ) {
-		return mw.config.get( textResources.mwConfig_ArticlePath ).replace( '$1', 'User:' + userName );
+		return this.pathPrefix.replace( '$1', 'User:' + userName );
 	}
 
 	InfoPage.prototype.getUserContributePageLink = function( userName ) {
 		var contributionLinkPath = 'Special:Contributions/$1';
-		contributionLinkPath = mw.config.get( textResources.mwConfig_ArticlePath ).replace( '$1', contributionLinkPath ); 
+		contributionLinkPath = this.pathPrefix.replace( '$1', contributionLinkPath ); 
 
 		return contributionLinkPath.replace( '$1', userName );
 	}
