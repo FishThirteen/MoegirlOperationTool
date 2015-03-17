@@ -40,28 +40,16 @@ function test12() {
 		}
 	}
 
-	
-	function mwUtility() {
-	}
-
-	mwUtility.prototype.isUserPage = function( ) {
-		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 2;
-	}
-
-	mwUtility.prototype.isTemplatePage = function( data ) {
-		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 10;
-	}
-
-	if ( !window.motMWUtility ) {
-		var utility = new mwUtility();
-		window.motMWUtility = utility;
-	}
-		
-
-	$( 'body' ).css( { positon: 'relative' } );
-
 	var uiTemplates = {
 		shadowTemplate : '<div class="mot_shade" ></div>',
+		alertWindowTemplate: '' 
+			+ '<div id="mot_alert_window" >'
+				+ '<div class="alert_title">标题</div>'
+				+ '<div class="alert_body">无发移动当前页面，当前页面已经被锁定，或者与其他页面关联，请您联系管理员</div>'
+				+ '<div class="alert_footer">'
+					+ '<a href="javascript:void(0);" class="ok_button" >确定</a>'
+				+ '</div>'
+			+ '</div>',
 		windowTemplate : ''
 			+ '<div class="mot_main">'
 				+ '<div class="mot_main_panel" class="{0}" >'
@@ -78,6 +66,39 @@ function test12() {
 
 	}
 
+	$( 'body' ).css( { positon: 'relative' } );
+
+	function mwUtility() {
+		this.alertWindow = $( uiTemplates.alertWindowTemplate ).appendTo( 'body' );
+		this.alertShade = $( uiTemplates.shadowTemplate ).attr( 'id', 'mot_alert_shade' ).appendTo( 'body' );
+	}
+
+	mwUtility.prototype.isUserPage = function( ) {
+		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 2;
+	}
+
+	mwUtility.prototype.isTemplatePage = function( data ) {
+		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 10;
+	}
+
+	mwUtility.prototype.alert = function( message, title ) {
+		this.alertWindow.show();
+		this.alertShade.show();
+	}
+
+	mwUtility.prototype.closeAlert = function() {
+		this.alertWindow.hide();
+		this.alertShade.hide();
+	}
+
+	if ( !window.motMWUtility ) {
+		var utility = new mwUtility();
+		window.motMWUtility = utility;
+	}
+
+
+	/* MoreButton class
+	*************************************************************/
 	function MoreButton() {
 		this.moreButtonTemplate = '<div id="moegirl_more_button" role="navigation" class="vectorMenu" aria_labelledby="p_cactions_label">'
 			+ '<h3 id="p_cactions_label" tabindex="0"><span>更多</span><a href="#" tabindex="_1"></a></h3>'
@@ -107,16 +128,18 @@ function test12() {
 			});
 	}
 		
-	var opMoreButton = new MoreButton();
-	//opMoreButton.replaceOrignal();
+	var motMoreButton = new MoreButton();
+	motMoreButton.replaceOrignal();
+	window.motMoreButton = motMoreButton;
 
-	window.opMoreButton = opMoreButton;
+	/* MoreButton class
+	*************************************************************/
 
-	
+
 	var infoPage = new InfoPage();
-	opMoreButton.addMenuItem( 'mlot_view_page_info_menu', '查看页面信息', function( event ) {
+	motMoreButton.addMenuItem( 'mlot_view_page_info_menu', '查看页面信息', function( event ) {
 		infoPage.show();
-	} );
+	});
 
 
 
@@ -485,5 +508,29 @@ function test12() {
 				return '操作';
 		}
 	}
+	/* InfoPage class
+	*************************************************************/
+
+	/* OperationPage class
+	*************************************************************/
+	function OperationPage() {
+	}
+	
+	OperationPage.prototype.show = function() {
+	}
+
+	OperationPage.prototype.hide = function() {
+	}
+
+	OperationPage.prototype.close = function() {
+	}
+
+	OperationPage.prototype.createWindow = function() {
+	}
+	/* OperationPage class
+	*************************************************************/
+
+
+
 	
 })( window, document, jQuery );

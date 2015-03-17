@@ -25,9 +25,15 @@
     .mot_main_panel .main_panel_inner { width: 1000px; }  
     .mot_main_panel .title_div { padding-bottom: 10px;border-bottom: 1px solid green; }
 
+#mot_alert_shade.mot_shade { z-index: 990000;  }
+#mot_alert_window { width: 300px;z-index: 999999;background-color:#fff;position: fixed;top: 200px;left: 50%;margin-left: -150px;  }
+#mot_alert_window .alert_title { background-color: green;color: #fff;font-size: 16px;padding: 0 15px;line-height: 32px;overflow: hidden;white-space: nowrap; }
+#mot_alert_window .alert_body { height: 110px;overflow: hidden;padding: 10px 15px 20px 15px;color: #555;font-size: 14px; }
+#mot_alert_window .alert_footer { padding: 0 10px 10px; }
+
 /******************* Info Window ********************************/
-.mot_shade.page_info { z-index: 99900; }
-.mot_main.page_info { z-index: 99999; }
+.mot_shade.page_info { z-index: 9900; }
+.mot_main.page_info { z-index: 9999; }
 .mot_main .page_infos { padding-bottom: 30px; }
 .mot_main .page_info_line { padding-top: 30px; }
 .mot_main .page_info_unit { margin-left: 35px;width: 258px;height: 400px;padding: 25px;border: 1px solid #e3e3e3;overflow: hidden; }
