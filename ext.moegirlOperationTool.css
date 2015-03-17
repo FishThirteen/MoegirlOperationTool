@@ -28,9 +28,15 @@
 #mot_main .page_infos { padding-bottom: 30px; }
 #mot_main .page_info_line { padding-top: 30px; }
 #mot_main .page_info_unit { margin-left: 35px;width: 258px;height: 400px;padding: 25px;border: 1px solid #e3e3e3;overflow: hidden; }
+    #mot_main .page_info_unit.vscroll_unit .unit_body { height: 372px;overflow-x: hidden;overflow-y: auto; }
+
 #mot_main .page_info_unit.first { margin-left: 0; }
     #mot_main .page_info_unit .unit_title { padding-bottom: 5px;border-bottom: 1px solid green; }
         #mot_main .page_info_unit .unit_title .more_link { margin-top: 6px; }
     #mot_main .page_info_unit .unit_body .body_line { line-height: 30px;border-bottom: 1px dashed #ccc;white-space: nowrap;overflow:hidden; } 
+    #mot_main .page_info_unit .unit_body .body_line_1 { border-bottom: 1px dashed #ccc;white-space: nowrap;overflow:hidden;padding: 0 0 6px 0; }
+    #mot_main .page_info_unit .unit_body .line_type_2 { font-size: 14px; }
+    #mot_main .page_info_unit .unit_body .line_type_2 .sub_des { font-size:12px;color:#999;padding-top: 6px; }
+    #mot_main .page_info_unit .unit_body .line_type_2 .main_des { color:#555; }
 
 
