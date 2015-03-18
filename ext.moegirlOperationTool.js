@@ -9,6 +9,7 @@ function test12() {
 		console.log( data );
 	});
 }
+
 // Wrap with anonymous function
 ( function ( window, document, $, undefined ) {
 	'use strict';
@@ -46,8 +47,8 @@ function test12() {
 			+ '<div id="mot_alert_window" >'
 				+ '<div class="alert_title">标题</div>'
 				+ '<div class="alert_body">无发移动当前页面，当前页面已经被锁定，或者与其他页面关联，请您联系管理员</div>'
-				+ '<div class="alert_footer">'
-					+ '<a href="javascript:void(0);" class="ok_button" >确定</a>'
+				+ '<div class="alert_footer clearfix">'
+					+ '<a href="javascript:void(0);" class="ok_button alert_button" >确定</a>'
 				+ '</div>'
 			+ '</div>',
 		windowTemplate : ''
@@ -66,11 +67,21 @@ function test12() {
 
 	}
 
+	if ( !window.motUITemplates ) {
+		window.motUITemplates = uiTemplates;
+	}
+
+
 	$( 'body' ).css( { positon: 'relative' } );
 
 	function mwUtility() {
-		this.alertWindow = $( uiTemplates.alertWindowTemplate ).appendTo( 'body' );
-		this.alertShade = $( uiTemplates.shadowTemplate ).attr( 'id', 'mot_alert_shade' ).appendTo( 'body' );
+		this.alertWindow = $( uiTemplates.alertWindowTemplate ).appendTo( 'body' ).hide();
+		this.alertShade = $( uiTemplates.shadowTemplate ).attr( 'id', 'mot_alert_shade' ).appendTo( 'body' ).hide();
+		var self = this;
+		this.alertOKButton = $( '.ok_button', this.alertWindow )
+			.click( function() {
+				self.closeAlert();
+			});
 	}
 
 	mwUtility.prototype.isUserPage = function( ) {
@@ -192,7 +203,7 @@ function test12() {
 
 	InfoPage.prototype.show = function() {
 		if ( !this.isInit ) {
-			this.createWindow( 'infopage_main', this.textResources.operationTool_MainTitle );
+			this.createWindow( this.textResources.operationTool_MainTitle, 'infopage_main' );
 			this.isInit = true;
 		}
 		this.window.show();
@@ -211,12 +222,14 @@ function test12() {
 	}
 
 	InfoPage.prototype.createWindow = function( title, className ) {
-		this.shadow = $( uiTemplates.shadowTemplate ).appendTo( 'body' ).addClass( 'page_info' );
-		this.window = $( uiTemplates.windowTemplate.format( title, className ))
-			.appendTo( 'body' ).addClass( 'page_info' );
-
-		this.shadow.hide();
-		this.window.hide();
+		this.shadow = $( motUITemplates.shadowTemplate )
+			.appendTo( 'body' )
+			.addClass( 'page_info' )
+			.hide();
+		this.window = $( motUITemplates.windowTemplate.format( className, title ))
+			.appendTo( 'body' )
+			.addClass( 'page_info' )
+			.hide();
 
 		this.closeButton =  $( '.panel_close_button', this.window );
 
@@ -514,23 +527,118 @@ function test12() {
 	/* OperationPage class
 	*************************************************************/
 	function OperationPage() {
+		this.api = new mw.Api();
+		this.isInit = false;
+		this.window;
+		this.shade;
+		this.body;
+		this.closeButton;
+		this.texts = {
+			windowTitle : '管理员操作'
+		}
+
+		this.pageName = mw.config.get( 'wgPageName' );
+		this.pathPrefix = mw.config.get( 'wgArticlePath' );
+		this.sectionTemplate = ''
+			+ '<div>' 
+				+ '<fieldset class="section_c" >'
+					+ '<legend >'
+						+ '{0}'
+					+ '</legend>'
+					+ '<div class="section_body" >' 
+					+ '</div>'
+				+ '</fieldset>'
+			+ '</div>';
+
 	}
 	
 	OperationPage.prototype.show = function() {
+		if ( !this.isInit ) {
+			this.createWindow( this.texts.windowTitle, 'operation_page' );
+		}
+
+		this.window.show();
+		this.shade.show();
 	}
 
 	OperationPage.prototype.hide = function() {
+		this.window.hide();
+		this.shade.hide();
 	}
 
 	OperationPage.prototype.close = function() {
+		this.window.remove();
+		this.shade.remove();
+		this.isInit = false;
 	}
 
-	OperationPage.prototype.createWindow = function() {
+	OperationPage.prototype.createWindow = function( title, className ) {
+		this.shade = $( motUITemplates.shadowTemplate )
+			.appendTo( 'body' )
+			.addClass( className )
+			.hide();
+		this.window = $( motUITemplates.windowTemplate.format( className + '_window', title ))
+			.appendTo( 'body' )
+			.addClass( className )
+			.hide();
+
+		this.closeButton =  $( '.panel_close_button', this.window );
+
+		var self = this;
+		this.closeButton.click( function() {
+			self.close();
+		});
+		
+		this.body = $( '<div class="operation_body"></div>').appendTo( '.main_panel_inner', this.window ); 
+
+		this.createDeleteSection().appendTo( this.body );
+
 	}
+
+	OperationPage.prototype.createDeleteSection = function() {
+		var section = $( this.sectionTemplate.format( '删除' ));
+		var sectionBody = $( '.section_body', section ).addClass( 'delete_section' );
+
+		var template = ''
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title normal_title">原因：</div>'
+				+ '<div class="fl_l">'
+					+ '<select>'
+						+ '<option selected>其他原因</option>'
+						+ '<optgroup label="常见删除原因" >'
+							+ '<option>测试1</option>'
+							+ '<option>测试2</option>'
+							+ '<option>测试3</option>'
+						+ '</optgroup>'
+					+ '</select>'
+				+'</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title normal_title">其他/附加原因：</div>'
+				+ '<div class="fl_l"><input type="text" id="delete_reason" name="delete_reason" /></div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<input type="checkbox" id="delete_add_watch_checkbox" name="delete_add_watch_checkbox" />'
+					+ '<label class="checkbox_label" for="delete_add_watch_checkbox">监视本页</label>'
+				+ '</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<a class="click_button" href="javascript:void(0);" >删除页面</a>'
+				+ '</div>'
+			+ '</div>';
+		$( template ).appendTo( sectionBody );
+		return section;
+	}
+
+	var operationPage = new OperationPage();
+	motMoreButton.addMenuItem( 'mot_operation_page_menu', '保护/移动/删除', function( event ) {
+		operationPage.show();
+	});
 	/* OperationPage class
 	*************************************************************/
-
-
-
 	
 })( window, document, jQuery );

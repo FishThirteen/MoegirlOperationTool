@@ -3,7 +3,7 @@
 .mot_main .fl_l { float: left; } 
 .mot_main .fl_r { float: right; }
 .mot_main .clearfix { *zoom: 1; }
-.mot_main .clearfic:before, .mot_main .clearfix:after { content: "";display: table;  }
+.mot_main .clearfix:before, .mot_main .clearfix:after { content: "";display: table;  }
 .mot_main .clearfix:after { clear:both;height: 0;overflow: hidden;visibility: hidden; } 
 .mot_main h1, .mot_main h2, .mot_main h3, .mot_main h4, .mot_main h5, .mot_main h6 { color: green;display: block;margin: 0;padding: 0;border: 0;font-weight: normal; }
 .mot_main h1 { font-size: 26px; }
@@ -12,24 +12,36 @@
 .mot_main h4 { font-size: 16px; }
 .mot_main h5, .mot_main h6 { font-size: 14px; }
 .mot_main .more_link, .mot_main:visited { color: #0645ad; }
-.mot_mian .text_link, .mot_mian .text_link:visited { color: #777; }
-.mot_mian .text_link:hover { color: #0645ad; }
+.mot_main .text_link, .mot_main .text_link:visited { color: #777; }
+.mot_main .text_link:hover { color: #0645ad; }
+.mot_main .normal_button, .mot_main .normal_button:visited  { display: block;line-height: 28px;padding: 0 15px;background-color: green;color: #fff;font-size: 14px; }
+.mot_main .normal_button:hover { background-color: #00B300;text-decoration: none;!important }
+
+
 /************End global**************************/
 
 .mot_shade { position: absolute; width: 100%; height: 100%; background: #000; top: 0; left: 0; opacity: 0.7; filter: alpha(opacity=70); }
 .mot_main  { width: 100%; position: absolute; top: 0; left: 0; }
 
-.mot_main_panel { border: 1px solid #aaa;width: 1060px;height:600px;margin: 80px auto auto auto;position: relative; }
+.mot_main_panel { border: 1px solid #aaa;width: 1060px;height:660px;margin: 80px auto auto auto;position: relative; }
     .mot_main_panel .panel_close_button { position: absolute; width: 36px; height: 36px; top: -18px; right: -18px; background: url( 'http://zh.moegirl.org/extensions/FancyBoxThumbs/modules/fancyBox/source/fancybox_sprite.png' ) no-repeat 0 0; }
     .mot_main_panel .main_panel_div { width: 1000px;height:600px;padding: 30px;background: #fff;overflow-x:hidden;overflow-y:auto; }
     .mot_main_panel .main_panel_inner { width: 1000px; }  
     .mot_main_panel .title_div { padding-bottom: 10px;border-bottom: 1px solid green; }
 
 #mot_alert_shade.mot_shade { z-index: 990000;  }
+
 #mot_alert_window { width: 300px;z-index: 999999;background-color:#fff;position: fixed;top: 200px;left: 50%;margin-left: -150px;  }
 #mot_alert_window .alert_title { background-color: green;color: #fff;font-size: 16px;padding: 0 15px;line-height: 32px;overflow: hidden;white-space: nowrap; }
 #mot_alert_window .alert_body { height: 110px;overflow: hidden;padding: 10px 15px 20px 15px;color: #555;font-size: 14px; }
 #mot_alert_window .alert_footer { padding: 0 10px 10px; }
+#mot_alert_window .alert_button,#mot_alert_window .alert_button:visited  { display: block;line-height: 28px;padding: 0 15px;background-color: green;color: #fff;font-size: 14px; }
+#mot_alert_window .alert_button:hover { background-color: #00B300;text-decoration: none;!important }
+#mot_alert_window .ok_button { float: right; }
+#mot_alert_window .clearfix { *zoom: 1; }
+#mot_alert_window .clearfix:before, #mot_alert_window .clearfix:after { content: "";display: table;  }
+#mot_alert_window .clearfix:after { clear:both;height: 0;overflow: hidden;visibility: hidden; } 
+
 
 /******************* Info Window ********************************/
 .mot_shade.page_info { z-index: 9900; }
@@ -48,4 +60,17 @@
     .mot_main .page_info_unit .unit_body .line_type_2 .sub_des { font-size:12px;color:#999;padding-top: 6px; }
     .mot_main .page_info_unit .unit_body .line_type_2 .main_des { color:#555; }
 
-
+/******************* Operation Window ********************************/
+.mot_shade.operation_page { z-index: 19900; }
+.mot_main.operation_page { z-index: 19999; }
+.operation_page .section_c { border: 1px solid green;padding: 0 0 20px 10px; }
+    .operation_page .section_c legend { font-size: 20px; }
+    .operation_page .section_c .section_line { padding: 8px 0; }
+    .operation_page .section_c .section_title { width: 120px;text-align: right;margin: 0 10px 0 0; }
+    .operation_page .section_c .normal_title { line-height: 36px; }
+    .operation_page .section_c select { padding: 8px 10px;border: 1px solid #aaa;color:#444;font-size: 14px;margin: 0; }
+    .operation_page .section_c input[type="text"] { line-height: 34px;width: 400px;padding: 0 10px;font-size: 14px;color: #333;margin: 0; }
+    .operation_page .section_c input[type="checkbox"] { width: 16px;height: 16px;margin: 0;vertical-align: middle; }
+    .operation_page .section_c .click_button,.operation_page .section_c .click_button:visited { display: block;line-height: 36px;padding: 0 25px;background-color: green;color: #fff;font-size: 16px; }
+    .operation_page .section_c .click_button:hover { background-color: #00B300;text-decoration: none; }
+    .operation_page .section_c .checkbox_label { vertical-align: middle;padding-left: 10px; }
