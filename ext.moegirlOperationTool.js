@@ -63,6 +63,10 @@ function test12() {
 						+ '</div>'
 					+ '</div>'
 				+ '</div>'
+			+ '</div>',
+		loadingWindow: ''
+			+ '<div class="mot_loading_window">'
+				+ '<img src="http://zh.moegirl.org/extensions/FancyBoxThumbs/modules/fancyBox/source/fancybox_loading.gif?2013-11-26T15:31:40Z" alt="loading" style="width: 24px;height: 24px;" class="loading_image" />'
 			+ '</div>'
 
 	}
@@ -72,12 +76,16 @@ function test12() {
 	}
 
 
-	$( 'body' ).css( { positon: 'relative' } );
-
+	
 	function mwUtility() {
+		$( 'body' ).css( { positon: 'relative' } );
+
 		this.alertWindow = $( uiTemplates.alertWindowTemplate ).appendTo( 'body' ).hide();
 		this.alertShade = $( uiTemplates.shadowTemplate ).attr( 'id', 'mot_alert_shade' ).appendTo( 'body' ).hide();
 		this.alertCallback;
+
+		this.loadingWindow = $( uiTemplates.loadingWindow ).appendTo( 'body' ).hide();
+
 		var self = this;
 		this.alertOKButton = $( '.ok_button', this.alertWindow )
 			.click( function() {
@@ -119,6 +127,14 @@ function test12() {
 	mwUtility.prototype.closeAlert = function() {
 		this.alertWindow.hide();
 		this.alertShade.hide();
+	}
+
+	mwUtility.prototype.showLoading = function() {
+		this.loadingWindow.show();
+	}
+
+	mwUtility.prototype.hideLoading = function() {
+		this.loadingWindow.hide();
 	}
 
 	mwUtility.prototype.currentPageIsWatched = function( callback ) {
@@ -698,7 +714,7 @@ function test12() {
 					action: 'delete',
 					title: self.pageName,
 					watchlist: watchParam,
-					reason: reason
+					reason: reason,
 					token: motMWUtility.csrfToken
 				})
 				.done( function( data ) {
@@ -756,8 +772,6 @@ function test12() {
 			}
 		} );
 	}
-
-
 
 	var operationPage = new OperationPage();
 	motMoreButton.addMenuItem( 'mot_operation_page_menu', '保护/移动/删除', function( event ) {
