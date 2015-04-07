@@ -118,12 +118,10 @@ function test12() {
 			})
 			.done( function( data ) {
 				if ( typeof data.query.namespaces !== 'undefined' ) {
-					$.each( data.query.namespaces, function( i, v ) ) {
-						
-					}
+					self.namespaces = data.query.namespaces;
 				}
-			});
-		});
+			} );
+		})();
 	}
 
 	mwUtility.prototype.isUserPage = function( ) {
@@ -667,7 +665,117 @@ function test12() {
 		this.body = $( '<div class="operation_body"></div>').appendTo( '.main_panel_inner', this.window ); 
 
 		this.createDeleteSection().appendTo( this.body );
+		this.createMoveSection().appendTo( this.body );
+	}
 
+	OperationPage.prototype.createMoveSection = function() {
+		var section = $( this.sectionTemplate.format( '移动' ) );
+		var sectionBody = $( '.section_body', section ).addClass( 'move_section' );
+		
+		var template = ''
+			+ '<div class="section_line clearfix">'
+			+ '<div class="fl_l section_title normal_title">命名空间：</div>'
+				+ '<div class="fl_l">'
+					+ '<select id="move_namespace_dropdown"></select>'
+				+'</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title normal_title">新页面：</div>'
+				+ '<div class="fl_l"><input type="text" id="move_new_page_textbox" name="move_new_page_textbox" /></div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title normal_title">原因：</div>'
+				+ '<div class="fl_l"><input type="text" id="move_reason_textbox" name="move_reason_textbox" /></div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<input type="checkbox" id="move_left_redirect_checkbox" name="move_left_redirect_checkbox" checked />'
+					+ '<label class="checkbox_label" for="move_left_redirect_checkbox">保留重定向</label>'
+				+ '</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<input type="checkbox" id="move_watch_checkbox" name="move_watch_checkbox" />'
+					+ '<label class="checkbox_label" for="move_watch_checkbox">监视来源页面和目标页面</label>'
+				+ '</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<a class="click_button" href="javascript:void(0);" id="move_move_button" >移动页面</a>'
+				+ '</div>'
+			+ '</div>'
+			+ '';
+
+		$( template ).appendTo( sectionBody );
+
+		var namespaceDropdown = $( '#move_namespace_dropdown', section );
+		var newPageTextbox = $( '#move_new_page_textbox', section ).val( this.pageName ); 
+		var moveButton = $( '#move_move_button', section );
+		var watchCheckbox = $( '#move_watch_checkbox', section );
+		motMWUtility.currentPageIsWatched( function( isWatched ) {
+			watchCheckbox.attr( 'checked', isWatched );
+		} );
+		var reasonTextbox = $( '#move_reason_textbox', section );
+		var redirectCheckbox = $( '#move_left_redirect_checkbox', section );
+		var self = this;
+		moveButton.click( function() {
+			var from = self.pageName;
+			var selectedNamespaceOption = $( 'option:selected', namespaceDropdown );
+			var namespace = '';
+			if ( selectedNamespaceOption.attr( 'value' ) != '0' ) {
+				namespace = selectedNamespaceOption.text() + ":";
+			}
+			var to = namespace + newPageTextbox.val();
+			var watchParam = watchCheckbox.is( ':checked' ) ? 'watch' : 'preferences';
+
+			var noredirect = !redirectCheckbox.is( ':checked' ); 
+			var reason = reasonTextbox.val();
+
+			var apiData = {
+				action: 'move',
+				from: from,
+				to: to,
+				reason: reason,
+				watchlist: watchParam,
+				token: motMWUtility.csrfToken
+			}
+
+			if ( noredirect ) {
+				apiData[ 'noredirect' ] = '';
+			}
+
+			motMWUtility.showLoading();
+			self.api.post( apiData ).done( function( data ) {
+				motMWUtility.hideLoading();
+				console.log( data );
+				motMWUtility.alert( '移动页面成功', '成功', function() {
+					var newPageUrl = self.pathPrefix.replace( '$1', data.move.to );
+					window.location.assign( newPageUrl );
+				} );
+			})
+			.fail( function( jqXHR, textStatus ) {
+				motMWUtility.hideLoading();
+				console.log( textStatus ); 
+				motMWUtility.alert( textStatus.error.info );
+			});
+			
+		});
+		this.initNamesapceDropdown( namespaceDropdown );
+
+		return section;
+	}
+
+	OperationPage.prototype.initNamesapceDropdown = function( dropdown ) {
+		$( '<option selected value="0" >(主)</option>' ).appendTo( dropdown );
+		$.each( motMWUtility.namespaces, function( i, v ) {
+			if ( i <= 0 ) {
+				return;
+			}
+			$( '<option value="{0}" >{1}</option>'.format( v.id, v["*"] ) ).appendTo( dropdown );
+		} );
 	}
 
 	OperationPage.prototype.createDeleteSection = function() {
