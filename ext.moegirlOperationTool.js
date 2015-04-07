@@ -77,11 +77,29 @@ function test12() {
 	function mwUtility() {
 		this.alertWindow = $( uiTemplates.alertWindowTemplate ).appendTo( 'body' ).hide();
 		this.alertShade = $( uiTemplates.shadowTemplate ).attr( 'id', 'mot_alert_shade' ).appendTo( 'body' ).hide();
+		this.alertCallback;
 		var self = this;
 		this.alertOKButton = $( '.ok_button', this.alertWindow )
 			.click( function() {
 				self.closeAlert();
+				if ( !self.alertCallback ) {
+					self.alertCallback();
+					self.alertCallback = undefined;
+				}
 			});
+		this.api = new mw.Api();
+		this.csrfToken = '';
+		
+		var self = this;
+		(function getCsrfToken() {
+			self.api.get({
+				action: 'query',
+				meta: 'tokens'
+			})
+			.done( function( data ) {
+				self.csrfToken = data.query.tokens.csrftoken;
+			});
+		})();
 	}
 
 	mwUtility.prototype.isUserPage = function( ) {
@@ -92,14 +110,35 @@ function test12() {
 		return parseInt( mw.config.get( 'wgNamespaceNumber' ) ) === 10;
 	}
 
-	mwUtility.prototype.alert = function( message, title ) {
+	mwUtility.prototype.alert = function( message, title, callback ) {
 		this.alertWindow.show();
 		this.alertShade.show();
+		this.alertCallback = callback;
 	}
 
 	mwUtility.prototype.closeAlert = function() {
 		this.alertWindow.hide();
 		this.alertShade.hide();
+	}
+
+	mwUtility.prototype.currentPageIsWatched = function( callback ) {
+		this.api.get({
+			action: 'query',
+			prop: 'info',
+			inprop: 'watched',
+			titles: mw.config.get( 'wgPageName' )
+		})
+		.done( function( data ) {
+			var watched = false;
+			$.each( data.query.pages, function( i, page ) {
+				if ( typeof page.watched != 'undefined' ) {
+					watched = true;
+					return false;
+				}
+			});
+
+			callback( watched );
+		});
 	}
 
 	if ( !window.motMWUtility ) {
@@ -550,6 +589,8 @@ function test12() {
 				+ '</fieldset>'
 			+ '</div>';
 
+		this.reasonSeparatorText = "......";
+
 	}
 	
 	OperationPage.prototype.show = function() {
@@ -603,19 +644,12 @@ function test12() {
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title normal_title">原因：</div>'
 				+ '<div class="fl_l">'
-					+ '<select>'
-						+ '<option selected>其他原因</option>'
-						+ '<optgroup label="常见删除原因" >'
-							+ '<option>测试1</option>'
-							+ '<option>测试2</option>'
-							+ '<option>测试3</option>'
-						+ '</optgroup>'
-					+ '</select>'
+					+ '<select id="delete_delete_reason_dropdown"></select>'
 				+'</div>'
 			+ '</div>'
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title normal_title">其他/附加原因：</div>'
-				+ '<div class="fl_l"><input type="text" id="delete_reason" name="delete_reason" /></div>'
+				+ '<div class="fl_l"><input type="text" id="delete_delete_reason_textbox" name="delete_delete_reason_textbox" /></div>'
 			+ '</div>'
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title ">&nbsp;</div>'
@@ -627,12 +661,103 @@ function test12() {
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title ">&nbsp;</div>'
 				+ '<div class="fl_l">'
-					+ '<a class="click_button" href="javascript:void(0);" >删除页面</a>'
+					+ '<a class="click_button" href="javascript:void(0);" id="delete_delete_button" >删除页面</a>'
 				+ '</div>'
 			+ '</div>';
 		$( template ).appendTo( sectionBody );
+		
+		var addWatchCheckbox = $( '#delete_add_watch_checkbox', section );
+		motMWUtility.currentPageIsWatched( function( isWatched ) {
+			addWatchCheckbox.attr( 'checked', isWatched );
+		} );
+
+		var deleteReasonDropdown = $( '#delete_delete_reason_dropdown', section );
+		this.initReasonDropdown( deleteReasonDropdown, 'MediaWiki:Deletereason-dropdown', function( element ) {
+			$( '<option selected value="其他原因">其他原因</option>' ).appendTo( element );
+				var optGroup = $( '<optgroup label="常见删除原因" ></optgroup>' ).appendTo( element );
+				// $( '<option value=""></option>' );
+				optGroup.append( $( '<option value="广告">广告</option>' ) );
+				optGroup.append( $( '<option value="破坏行为">破坏行为</option>' ) );
+				optGroup.append( $( '<option value="侵犯著作权">侵犯著作权</option>' ) );
+				optGroup.append( $( '<option value="作者申请">作者申请</option>' ) );
+				optGroup.append( $( '<option value="受损重定向">受损重定向</option>' ) );	
+		} );
+
+		var self = this;
+		var deleteButton = $( '#delete_delete_button', section )
+			.click( function( event ) {
+				var reason = deleteReasonDropdown.val();
+				var reasonText = $( '#delete_delete_reason_textbox', section ).val();
+
+				if ( $.trim( reasonText ) !== '' ) {
+					reason = reason + self.reasonSeparatorText + reasonText;
+				}
+
+				var watchParam = addWatchCheckbox.is( ':checked' ) ? 'watch' : 'preferences';
+				self.api.post({
+					action: 'delete',
+					title: self.pageName,
+					watchlist: watchParam,
+					reason: reason
+					token: motMWUtility.csrfToken
+				})
+				.done( function( data ) {
+					console.log( data );
+				}).
+				fail( function ( data) {
+					console.log( 'fail' );
+					console.log( data );
+				});
+			});
+
+		
 		return section;
 	}
+	
+	OperationPage.prototype.initReasonDropdown = function( dropdown, pageName, defaultReasonFunc ) {
+		this.api.get( {
+			action: 'query',
+			prop: 'revisions',
+			titles: pageName,
+			rvprop: 'content'
+		} )
+		.done( function( data ) {
+			if ( typeof data.query.pages['-1'] != 'undefined' && typeof defaultReasonFunc === 'function' ) {
+				defaultReasonFunc( dropdown );
+			} else {
+				$( '<option selected value="其他原因">其他原因</option>' ).appendTo( dropdown );
+
+				var optionRaw = '';
+
+				$.each( data.query.pages, function(i, v) {
+					if (v.title === 'MediaWiki:Deletereason-dropdown' ) {
+						optionRaw = v.revisions[0]['*'];
+					}
+					return false;
+				});
+
+				if ( typeof optionRaw === 'undefined' || optionRaw === '' ) {
+					return;
+				}
+
+				var current = dropdown;
+				var valueArray = optionRaw.split( /\r|\n/ );
+
+				$.each( valueArray, function( i, v )  {
+					if ( v.startsWith( '**' ) ) {
+						var optionTemplate = '<option value="{0}">{0}</option>'.format( v.substr( 2 ) );
+						current.append( $( optionTemplate ) );
+					} else if ( v.startsWith( '*' ) ) {
+						var optionGroupTemplate = '<optgroup label="' + v.substr( 1) + '" ></optgroup>'
+						current = $( optionGroupTemplate );
+						dropdown.append( current );
+					}
+				});
+			}
+		} );
+	}
+
+
 
 	var operationPage = new OperationPage();
 	motMoreButton.addMenuItem( 'mot_operation_page_menu', '保护/移动/删除', function( event ) {
