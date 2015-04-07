@@ -45,8 +45,8 @@ function test12() {
 		shadowTemplate : '<div class="mot_shade" ></div>',
 		alertWindowTemplate: '' 
 			+ '<div id="mot_alert_window" >'
-				+ '<div class="alert_title">标题</div>'
-				+ '<div class="alert_body">无发移动当前页面，当前页面已经被锁定，或者与其他页面关联，请您联系管理员</div>'
+				+ '<div class="alert_title">消息</div>'
+				+ '<div class="alert_body"></div>'
 				+ '<div class="alert_footer clearfix">'
 					+ '<a href="javascript:void(0);" class="ok_button alert_button" >确定</a>'
 				+ '</div>'
@@ -90,13 +90,14 @@ function test12() {
 		this.alertOKButton = $( '.ok_button', this.alertWindow )
 			.click( function() {
 				self.closeAlert();
-				if ( !self.alertCallback ) {
+				if ( !!self.alertCallback ) {
 					self.alertCallback();
 					self.alertCallback = undefined;
 				}
 			});
 		this.api = new mw.Api();
 		this.csrfToken = '';
+		this.namespaces = {};
 		
 		var self = this;
 		(function getCsrfToken() {
@@ -108,6 +109,21 @@ function test12() {
 				self.csrfToken = data.query.tokens.csrftoken;
 			});
 		})();
+
+		(function getAllNamespaces() {
+			self.api.get({
+				action: 'query',
+				meta: 'siteinfo',
+				siprop: 'namespaces'
+			})
+			.done( function( data ) {
+				if ( typeof data.query.namespaces !== 'undefined' ) {
+					$.each( data.query.namespaces, function( i, v ) ) {
+						
+					}
+				}
+			});
+		});
 	}
 
 	mwUtility.prototype.isUserPage = function( ) {
@@ -121,6 +137,8 @@ function test12() {
 	mwUtility.prototype.alert = function( message, title, callback ) {
 		this.alertWindow.show();
 		this.alertShade.show();
+		$( '.alert_title', this.alertWindow ).text( title );
+		$( '.alert_body', this.alertWindow ).text( message );
 		this.alertCallback = callback;
 	}
 
@@ -195,7 +213,7 @@ function test12() {
 	}
 		
 	var motMoreButton = new MoreButton();
-	motMoreButton.replaceOrignal();
+	//motMoreButton.replaceOrignal();
 	window.motMoreButton = motMoreButton;
 
 	/* MoreButton class
@@ -710,6 +728,7 @@ function test12() {
 				}
 
 				var watchParam = addWatchCheckbox.is( ':checked' ) ? 'watch' : 'preferences';
+				motMWUtility.showLoading();
 				self.api.post({
 					action: 'delete',
 					title: self.pageName,
@@ -718,11 +737,15 @@ function test12() {
 					token: motMWUtility.csrfToken
 				})
 				.done( function( data ) {
+					motMWUtility.hideLoading();
+					motMWUtility.alert( '删除成功', '成功', function() {
+						window.location.reload();
+					} );
 					console.log( data );
 				}).
-				fail( function ( data) {
-					console.log( 'fail' );
-					console.log( data );
+				fail( function ( xhr, textStatus, exception ) {
+					motMWUtility.hideLoading();
+					motMWUtility.alert( textStatus.error.info );
 				});
 			});
 
