@@ -211,7 +211,7 @@ function test12() {
 	}
 		
 	var motMoreButton = new MoreButton();
-	//motMoreButton.replaceOrignal();
+	motMoreButton.replaceOrignal();
 	window.motMoreButton = motMoreButton;
 
 	/* MoreButton class
@@ -666,6 +666,37 @@ function test12() {
 
 		this.createDeleteSection().appendTo( this.body );
 		this.createMoveSection().appendTo( this.body );
+
+		this.createProtectSection().appendTo( this.body );
+	}
+
+	OperationPage.prototype.createProtectSection = function() {
+		var section = $( this.sectionTemplate.format( '保护' ) );
+		var sectionBody = $( '.section_body', section ).addClass( 'protect_section' );
+
+		var template = ''
+			+ '<div class="subtitle">保护编辑</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title normal_title">操作等级：</div>'
+					+ '<div class="fl_l">'
+						+ '<select>'
+							+ '<option selected >所有用户</option>'
+							+ '<option>自动确认用户</option>'
+							+ '<option>管理员</option>'
+						+ '</select>'
+					+'</div>'
+			+ '</div>'
+			+ '<div class="section_line clearfix">'
+				+ '<div class="fl_l section_title ">&nbsp;</div>'
+				+ '<div class="fl_l">'
+					+ '<a class="click_button" href="javascript:void(0);" id="protect_protect_button" >保护页面</a>'
+				+ '</div>'
+			+ '</div>' 
+			+ '';
+		$( template ).appendTo( sectionBody );
+
+		return section;
+
 	}
 
 	OperationPage.prototype.createMoveSection = function() {
@@ -674,10 +705,10 @@ function test12() {
 		
 		var template = ''
 			+ '<div class="section_line clearfix">'
-			+ '<div class="fl_l section_title normal_title">命名空间：</div>'
-				+ '<div class="fl_l">'
-					+ '<select id="move_namespace_dropdown"></select>'
-				+'</div>'
+				+ '<div class="fl_l section_title normal_title">命名空间：</div>'
+					+ '<div class="fl_l">'
+						+ '<select id="move_namespace_dropdown"></select>'
+					+'</div>'
 			+ '</div>'
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title normal_title">新页面：</div>'
