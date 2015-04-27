@@ -78,4 +78,4 @@
     .operation_page .section_c .click_button:hover { background-color: #00B300;text-decoration: none; }
     .operation_page .section_c .checkbox_label { vertical-align: middle;padding-left: 10px; }
 
-    .operation_page .section_c .subtitle { color: green;line-height: 25px;border-bottom: 1px solid green;font-size: 18px;padding: 15px 0 5px 10px; }
+    .operation_page .section_c .subtitle { color: green;line-height: 25px;border-bottom: 1px solid green;font-size: 16px;padding: 15px 0 5px 10px; }

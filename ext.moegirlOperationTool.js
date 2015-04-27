@@ -15,7 +15,7 @@ function test12() {
 	'use strict';
 
 	// simple string.format
-	if (!String.prototype.format) {
+	if ( !String.prototype.format ) {
 		String.prototype.format = function() {
 		var args = arguments;
 		return this.replace(/{(\d+)}/g, function(match, number) { 
@@ -25,7 +25,7 @@ function test12() {
 		};
 	}
 
-	if (!Date.prototype.format2) {
+	if ( !Date.prototype.format2 ) {
 		Date.prototype.format2 = function ( date ) {
 			if (!date) {
 				date = this;
@@ -37,7 +37,92 @@ function test12() {
 			minutes = minutes < 10 ? '0' + minutes : minutes;
 			seconds = seconds < 10 ? '0' + seconds : seconds;
 			var strTime = hours + ':' + minutes + ':' + seconds;
-			return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + ' ' + strTime;
+			var month = date.getMonth() + 1;
+			month = month < 10 ? '0' + month : month;
+			var day = date.getDate();
+			day = day < 10 ? '0' + day : day;
+			return date.getFullYear() + '-' + month  + '-' + day + ' ' + strTime;
+		}
+	}
+	
+	if ( !Date.prototype.formatToTimestamp ) {
+		Date.prototype.formatToTimestamp = function ( date ) {
+			if (!date) {
+				date = this;
+			}
+
+			var hours = date.getHours();
+			var minutes = date.getMinutes();
+			var seconds = date.getSeconds();
+			hours = hours < 10 ? '0' + hours : hours;
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			seconds = seconds < 10 ? '0' + seconds : seconds;
+			var strTime = hours + minutes + seconds;
+			var month = date.getMonth() + 1;
+			month = month < 10 ? '0' + month : month;
+			var day = date.getDate();
+			day = day < 10 ? '0' + day : day;
+
+			return '' + date.getFullYear()   + month + day + strTime;
+		}
+	}
+		
+	if ( !Date.prototype.addHour ) {
+		Date.prototype.addHour = function( hour, date ) {
+			if ( !date ) {
+				date = this;
+			}
+
+			var dateInteger = date.getTime();
+			dateInteger += 60 * 60 * 1000 * hour;
+			
+			this.setTime( dateInteger );
+			// return new Date( dateInteger );
+			return this;
+		}
+	}
+
+	if ( Date.prototype.addDay ) {
+		Date.prototype.addDay = function( day, date ) {
+			if ( !date ) {
+				date = this;
+			}
+
+			return date.addHour( 24 * day );
+		}
+	}
+
+	if ( Date.prototype.addWeek ) {
+		Date.prototype.addWeek = function( week, date ) {
+			if ( !date ) {
+				date = this;
+			}
+
+			return date.addDay( week * 7 );
+		}
+	}
+
+	if ( Date.prototype.addMonth ) {
+		Date.prototype.addMonth = function( month, date ) {
+			if ( !date ) {
+				date = this;
+			}
+
+			var currentMonth = date.getMonth();
+			date.setMonth( currentMonth + month );
+			return date;
+		}
+	}
+
+	if ( Date.prototype.addYear ) {
+		Date.prototype.addYear = function( year, date ) {
+			if ( !date ) {
+				date = this;
+			}
+
+			var currentMonth = date.getMonth();
+			date.setMonth( currentMonth + year * 12 );
+			return date;
 		}
 	}
 
@@ -675,9 +760,55 @@ function test12() {
 		var sectionBody = $( '.section_body', section ).addClass( 'protect_section' );
 
 		var template = ''
-			+ '<div class="subtitle">保护编辑</div>'
 			+ '<div class="section_line clearfix">'
-				+ '<div class="fl_l section_title normal_title">操作等级：</div>'
+				+ '<div class="fl_l section_title normal_title ">设置适用范围：</div>'
+				+ '<div class="fl_l">'
+					+ '<select id="protect_protect_mode_dropdown" >'
+							+ '<option selected value="0" >同时设置编辑和移动</option>'
+							+ '<option value="1">分别设置编辑和移动</option>'
+					+ '</select>'
+				+ '</div>'
+			+ '</div>' 
+			+ '<div id="protect_pedit_area">'
+				+ '<div class="subtitle">保护设置</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">操作等级：</div>'
+						+ '<div class="fl_l">'
+							+ '<select>'
+								+ '<option selected >所有用户</option>'
+								+ '<option>自动确认用户</option>'
+								+ '<option>管理员</option>'
+							+ '</select>'
+						+'</div>'
+				+ '</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">终止时间：</div>'
+						+ '<div class="fl_l">'
+							+ '<select >'
+								+ '<option value="othertime">其它时间</option>'
+								+ '<option value="1 hour">1小时</option>'
+								+ '<option value="1 day">1天</option>'
+								+ '<option value="1 week">1周</option>'
+								+ '<option value="2 weeks">2周</option>'
+								+ '<option value="1 month">1个月</option>'
+								+ '<option value="3 months">3个月</option>'
+								+ '<option value="6 months">6个月</option>'
+								+ '<option value="1 year">1年</option>'
+								+ '<option value="infinite" selected="">不限期</option>'
+							+ '</select>'
+						+'</div>'
+				+ '</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">其他时间：</div>'
+						+ '<div class="fl_l">'
+							+ '<input type="text" id="protect_pedit_other_time_textbox" name="protect_pedit_other_time_textbox" />'
+						+'</div>'
+				+ '</div>'
+			+ '</div>'
+			+ '<div id="protect_pmove_area">'
+				+ '<div class="subtitle">保护移动</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">操作等级：</div>'
 					+ '<div class="fl_l">'
 						+ '<select>'
 							+ '<option selected >所有用户</option>'
@@ -685,18 +816,107 @@ function test12() {
 							+ '<option>管理员</option>'
 						+ '</select>'
 					+'</div>'
+				+ '</div>'
+			+ '</div>'
+			+ '<div id="protect_common_area">'
+				+ '<div class="subtitle">通用设置</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title">&nbsp;</div>'
+					+ '<div class="fl_l">'
+						+ '<input type="checkbox" id="protect_cascaded_checkbox" name="protect_cascaded_checkbox" />'
+						+ '<label class="checkbox_label" for="protect_cascaded_checkbox">保护嵌入该页面的页面（级联保护）</label>'
+					+'</div>'
+				+ '</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">原因：</div>'
+					+ '<div class="fl_l">'
+						+ '<select id="protect_protect_reason_dropdown"></select>'
+					+'</div>'
+				+ '</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title normal_title">其他/附加原因：</div>'
+					+ '<div class="fl_l"><input type="text" id="protect_protect_reason_textbox" name="protect_protect_reason_textbox" /></div>'
+				+ '</div>'
+				+ '<div class="section_line clearfix">'
+					+ '<div class="fl_l section_title">&nbsp;</div>'
+					+ '<div class="fl_l">'
+						+ '<input type="checkbox" id="protect_watch_checkbox" name="protect_watch_checkbox" />'
+						+ '<label class="checkbox_label" for="protect_watch_checkbox">监视来源页面和目标页面</label>'
+					+'</div>'
+				+ '</div>'
 			+ '</div>'
 			+ '<div class="section_line clearfix">'
 				+ '<div class="fl_l section_title ">&nbsp;</div>'
 				+ '<div class="fl_l">'
 					+ '<a class="click_button" href="javascript:void(0);" id="protect_protect_button" >保护页面</a>'
 				+ '</div>'
-			+ '</div>' 
+			+ '</div>'
 			+ '';
 		$( template ).appendTo( sectionBody );
 
+		var modeSelectDropdown = section.find( '#protect_protect_mode_dropdown' );
+		var editArea = section.find( '#protect_pedit_area' );
+		var moveArea = section.find( '#protect_pmove_area' );
+		var protectReasonDrowdown = section.find( '#protect_protect_reason_dropdown' ); 
+		this.initReasonDropdown( protectReasonDrowdown, 'MediaWiki:Protect-dropdown', function( element ) {
+			$( '<option selected value="其他原因">其他原因</option>' ).appendTo( element );
+				var optGroup = $( '<optgroup label="常见保护原因" ></optgroup>' ).appendTo( element );
+				// $( '<option value=""></option>' );
+				optGroup.append( $( '<option value="过渡破坏">过渡破坏</option>' ) );
+				optGroup.append( $( '<option value="过多垃圾信息">过多垃圾信息</option>' ) );
+				optGroup.append( $( '<option value="负面的编辑战">负面的编辑战</option>' ) );
+				optGroup.append( $( '<option value="高流量页面">高流量页面</option>' ) );
+		} );
+		this.protectModeDropdownHandler( modeSelectDropdown, editArea, moveArea );
+
+		var self = this;
+		modeSelectDropdown.on( 'change', function() {
+			self.protectModeDropdownHandler( modeSelectDropdown, editArea, moveArea );
+		} );
+
+
+		
 		return section;
 
+	}
+
+	OperationPage.prototype.getEndDateControlValue = function( dropdownValue, textBoxValue ) {
+		var newDate = new Date();	
+		if ( dropdownValue == 'infinite' ) {
+			return 	
+		} else if ( dropdownValue == 'othertime' ) {
+			newDate = new Date( textBoxValue );
+		} else if ( dropdownValue == '1 hour' ) {
+			newDate.addHour( 1 );
+		} else if ( dropdownValue == '1 day' ) {
+			newDate.addDay( 1 );
+		} else if ( dropdownValue == '1 week' ) {
+			newDate.addWeek( 1 );
+		} else if ( dropdownValue == '2 weeks' ) {
+			newDate.addWeek( 2 );
+		} else if ( dropdownValue == '1 month' ) {
+			newDate.addMonth( 1 );
+		} else if ( dropdownValue == '3 months' ) {
+			newDate.addMonth( 3 );
+		} else if ( dropdownValue == '6 months' ) {
+			newDate.addMonth( 6 );
+		} else if ( dropdownValue == '1 year' ) {
+			newDate.addYear( 1 );
+		} else {
+		}
+		
+		
+		return newDate.formatToTimestamp();
+	}
+
+	OperationPage.prototype.protectModeDropdownHandler = function( dropdown, editArea, moveArea ) {
+		if ( dropdown.val() == 0 ) {
+			editArea.find( '.subtitle' ).text( '保护设置' );
+			moveArea.hide();
+		} else {
+			editArea.find( '.subtitle' ).text( '保护编辑' );
+			moveArea.show();
+		}
 	}
 
 	OperationPage.prototype.createMoveSection = function() {
@@ -908,7 +1128,7 @@ function test12() {
 				var optionRaw = '';
 
 				$.each( data.query.pages, function(i, v) {
-					if (v.title === 'MediaWiki:Deletereason-dropdown' ) {
+					if (v.title === pageName ) {
 						optionRaw = v.revisions[0]['*'];
 					}
 					return false;
