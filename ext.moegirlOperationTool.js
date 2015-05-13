@@ -296,7 +296,7 @@ function test12() {
 	}
 		
 	var motMoreButton = new MoreButton();
-	//motMoreButton.replaceOrignal();
+	motMoreButton.replaceOrignal();
 	window.motMoreButton = motMoreButton;
 
 	/* MoreButton class
