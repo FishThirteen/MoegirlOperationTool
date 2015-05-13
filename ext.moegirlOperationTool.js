@@ -579,7 +579,6 @@ function test12() {
 	}
 
 	InfoPage.prototype.filterLog = function( log ) {
-		return true;
 		if ( log.type === 'thanks' || ( log.type === 'patrol' && log.patrol.auto === 1) ) {
 			return false;
 		}
