@@ -296,7 +296,11 @@ function test12() {
 	}
 		
 	var motMoreButton = new MoreButton();
-	motMoreButton.replaceOrignal();
+
+	if ( typeof wgNamespaceNumber === 'number' && wgNamespaceNumber != -1 ) {
+		motMoreButton.replaceOrignal();
+	}
+	
 	window.motMoreButton = motMoreButton;
 
 	/* MoreButton class
