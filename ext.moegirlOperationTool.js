@@ -453,8 +453,9 @@ function test12() {
 	}
 
 	InfoPage.prototype.createUserLogUnit = function() {
+		var mark = this.getParameterMark();
 		var pageUserName = mw.config.get( 'wgTitle' );
-		var moreLink = this.pathPrefix.replace( '$1', 'Special:Log&user=' + pageUserName );
+		var moreLink = this.pathPrefix.replace( '$1', 'Special:Log' + mark +  'user=' + pageUserName );
 		var control = $( this.unitTemplate.format( this.textResources.userLogUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
@@ -544,7 +545,9 @@ function test12() {
 	
 
 	InfoPage.prototype.createLogUnit = function() {
-		var logPagePath = this.pathPrefix.replace( '$1', 'Special:Log&page=$1' );
+		var mark = this.getParameterMark();
+		var logPagePath = this.pathPrefix.replace( '$1', 'Special:Log' 
+			+ mark + 'page=$1' );
 		var moreLink = logPagePath.replace( '$1', this.pageName + '&hide_patrol_log=0' );
 		
 		var control = $( this.unitTemplate.format( this.textResources.pageLogUnit_Title, moreLink ));
@@ -616,8 +619,9 @@ function test12() {
 	}
 
 	InfoPage.prototype.createSubPageLinksUnit = function() {
+		var mark = this.getParameterMark();
 		var moreLink = this.pathPrefix.replace( '$1', 'Special:PrefixIndex' ) 
-			+ '&prefix=' + this.pageName;
+			+ mark + 'prefix=' + this.pageName;
 		var control = $( this.unitTemplate.format( this.textResources.subPagesUnit_Title, moreLink ));
 		var controlBody = $( '.unit_body', control );
 
@@ -650,6 +654,15 @@ function test12() {
 		contributionLinkPath = this.pathPrefix.replace( '$1', contributionLinkPath ); 
 
 		return contributionLinkPath.replace( '$1', userName );
+	}
+
+	InfoPage.prototype.getParameterMark = function() {
+		var mark = '?';
+		if ( this.pathPrefix.indexOf( '?' ) > -1 ) {
+			mark = '&';
+		}
+
+		return mark;
 	}
 
 	InfoPage.prototype.getOperationString = function( operationType ) {
